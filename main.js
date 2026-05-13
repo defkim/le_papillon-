@@ -760,4 +760,4 @@ scene("gameover_2.2", ({score})=>{
 
 
 
-go("end")
+go("start")
