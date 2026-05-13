@@ -27,8 +27,157 @@ loadSprite("plateform_base", "image/plateform_base.png");
 loadSprite("chrysalide", "image/chrys.png");
 loadSprite("branch", "image/branch.png");
 loadSprite("wasp", "image/wasp.png")
+loadSprite("bg_leaf", "image/bg_leaf.png")
 
 //Scene
+
+scene("start", ()=> {
+
+    add ([rect(width(), height()), color (0,0,0),fixed()])
+
+    
+  
+    add ([
+        text("LE PAPILLON",{
+        size:35,
+        align: "center", 
+        width : width ()*0.7,
+        
+    }),
+    anchor ("center"),
+    pos(center()),
+    color(137,207,240)
+    ])
+    add([
+        text ("Appuie sur ESPACE pour commencer", {size:16}),
+        anchor ("center"),
+        pos(width()/2, height()-60),
+        color(120,120,120),
+    ])
+
+    onKeyPress("space", () => go ("trans_1"))
+
+    })
+
+scene("trans_1", ()=> {
+
+    add([
+    sprite('bg_leaf'), pos(0,0),z(-100), scale(width()/576, height()/324), fixed()
+])
+
+  
+    add ([
+        text("Au milieu des feuilles se cachent des oeufs... Après quelques jours des petites larves émergent. Il s'agit de petites chenilles. Elles ont besoin de manger pour grandir... ",{
+        size:28,
+        align: "center", 
+        width : width ()*0.7,
+        
+    }),
+    anchor ("center"),
+    pos(center()),
+    color(0,0,0)
+    ])
+    add([
+        text ("Appuie sur ESPACE pour continuer", {size:16}),
+        anchor ("center"),
+        pos(width()/2, height()-60),
+        color(120,120,120),
+    ])
+    onKeyPress("space", () => go ("lvl_1"))
+
+})
+
+scene("trans_2", ()=> {
+
+    add ([rect(width(), height()), color (0,0,0),fixed()])
+    add ([
+        text("Après avoir mangé suffisamment, la chenille a bien grandi et grossi. Elle se fixe alors à une branche d'arbre, tisse un cocon autour d'elle et se transforme en une chrysalide très fragile... ",{
+        size:28,
+        align: "center", 
+        width : width ()*0.7,
+    }),
+    anchor ("center"),
+    pos(center()),
+    color(255,255,255)
+    ])
+    add([
+        text ("Appuie sur ESPACE pour continuer", {size:16}),
+        anchor ("center"),
+        pos(width()/2, height()-60),
+        color(120,120,120),
+    ])
+    onKeyPress("space", () => go ("lvl_2"))
+
+})
+scene("trans_3", ()=> {
+
+    add ([rect(width(), height()), color (0,0,0),fixed()])
+    add ([
+        text("Après quelques semaines, la chrysalide s'ouvre et un papillon en sort. Une fois ses ailes prêtes, il s'envole pour butiner les fleurs et chercher un partenaire. ",{
+        size:28,
+        align: "center", 
+        width : width ()*0.7,
+    }),
+    anchor ("center"),
+    pos(center()),
+    color(255,255,255)
+    ])
+    add([
+        text ("Appuie sur ESPACE pour continuer", {size:16}),
+        anchor ("center"),
+        pos(width()/2, height()-60),
+        color(120,120,120),
+    ])
+    onKeyPress("space", () => go ("lvl_3"))
+
+})
+
+scene("end", ()=> {
+
+    add([
+    sprite('bg_leaf'), pos(0,0),z(-100), scale(width()/576, height()/324), fixed()
+])
+
+  
+    add ([
+        text("Après avoir trouver un partenaire c'est au tour de notre papillon de cacher ses oeufs dans les feuilles..",{
+        size:28,
+        align: "center", 
+        width : width ()*0.7,
+        
+    }),
+    anchor ("center"),
+    pos(center()),
+    color(0,0,0)
+    ])
+    const hint = add([
+        text ("Appuie sur ESPACE pour continuer", {size:16}),
+        anchor ("center"),
+        pos(width()/2, height()-60),
+        color(120,120,120),
+    ])
+    onKeyPress("space", () => {
+    add ([rect(width(), height()), color (0,0,0),fixed()])
+
+    add ([
+        text("Merci d'avoir joué.",{
+        size:35,
+        align: "center", 
+        width : width ()*0.7,
+        
+    }),
+    anchor ("center"),
+    pos(center()),
+    color(137,207,240),
+    fixed(),
+    z(1),
+    ])
+    hint.destroy()
+
+})
+})
+
+
 scene("lvl_1", () => {
 
    add([
@@ -84,7 +233,7 @@ scene("lvl_1", () => {
             "platform",
             {
                 direction: dir,
-                speed: 80,
+                speed: 90,
                 startX: x,
                 range: 140,
                 prevX: x,   
@@ -122,6 +271,12 @@ scene("lvl_1", () => {
     ];
 
     let lastY =130;
+    plat_donnees.push({
+        x: Math.random()*500+50,
+        y:lastY - (Math.random()*35+50)
+    })
+
+    
     for(let i=plat_donnees.length;i<50;i++){
         plat_donnees.push({
             x:Math.random()*550+50,
@@ -153,11 +308,11 @@ scene("lvl_1", () => {
     player.onCollide("feuille", (leaf)=> {
         destroy(leaf);
         score ++;
-        scoreLabel.text= "Feuilles : "+score
+        scoreLabel.text= "Feuilles : "+score +"/30"
     });
     onUpdate(()=>{
-        if(score ==50){
-        go("lvl_2");
+        if(score ==30){
+        go("trans_2");
         return;
         }
         setCamPos(player.pos);
@@ -209,7 +364,7 @@ scene("lvl_1", () => {
         player.flipX = false;
     });
     onKeyPress("up", ()=>{
-        if (player.isGrounded()) player.jump(700); player.play("jump");
+        if (player.isGrounded()) player.jump(800); player.play("jump");
     });
     //interface score 
 const scoreLabel = add([
@@ -241,15 +396,22 @@ scene("lvl_2", ()=>{
     height()/600), 
     fixed()
 ])
+
+    add([
+        text ("Appuie sur ESPACE pour stabiliser la chrysalide", {size:16, font : "monospace"}),
+        anchor ("center"),
+        pos(360, height()-60),
+        color(120,120,120),
+    ])  
     
     const chrys = add([
         sprite("chrysalide"),
-        pos(0
-            //PIVOT_X + Math.sin(pendule.angle) * ROPE_LEN - (CHRYS_W*4) / 2,
-            //PIVOT_Y + Math.cos(pendule.angle) * ROPE_LEN - (CHRYS_H*4) / 4,
-        ),
+        pos(0),
         z(100),
         scale(SCALE_CHRYS)
+        
+
+    
 
     ]);
     onDraw(() => {
@@ -261,7 +423,7 @@ scene("lvl_2", ()=>{
     });
 });
     const ANGLE_SEUIL=0.08;
-    const OBJECTIF = 25;
+    const OBJECTIF = 20;
 
     let scoreStable=0;
     let canPress = true;
@@ -270,7 +432,7 @@ scene("lvl_2", ()=>{
 
     //balancement
     let t = 0
-    const AMPLITUDE = 0.5
+    const AMPLITUDE = 0.7
     const VITESSE = 1.8
     let angle = 0
 
@@ -325,7 +487,7 @@ scene("lvl_2", ()=>{
         //Zone verte au centre
         drawRect({ pos: vec2(JAUGE_X + JAUGE_W / 2 - zoneLargeur, JAUGE_Y), width: zoneLargeur * 2, height: 12, color: rgb(50, 200, 80) });
 
-        //curseur
+        //curseur 
         const normalise = Math.max(-1, Math.min(1, angle / JAUGE_MAX));
         const curseurX  = JAUGE_X + JAUGE_W / 2 + normalise * (JAUGE_W / 2);
         drawCircle({
@@ -338,12 +500,14 @@ scene("lvl_2", ()=>{
     
     onUpdate(() => {
         
-        t += dt();
-        angle = Math.sin(t*VITESSE)*AMPLITUDE;
 
-        chrys.pos.x = PIVOT_X + Math.sin(angle)*ROPE_LEN-(CHRYS_W*SCALE_CHRYS)/2;
-        chrys.pos.y=PIVOT_Y+ Math.cos(angle)*ROPE_LEN-(CHRYS_H*SCALE_CHRYS)/4;
-        inZone = Math.abs(angle)<ANGLE_SEUIL;
+        
+        t += dt();
+        angle = Math.sin(t*VITESSE)*AMPLITUDE; // code générer à l'aide d'une IA (Claude)
+
+        chrys.pos.x = PIVOT_X + Math.sin(angle)*ROPE_LEN-(CHRYS_W*SCALE_CHRYS)/2; // code générer à l'aide d'une IA (Claude)
+        chrys.pos.y=PIVOT_Y+ Math.cos(angle)*ROPE_LEN-(CHRYS_H*SCALE_CHRYS)/4; // code générer à l'aide d'une IA (Claude)
+        inZone = Math.abs(angle)<ANGLE_SEUIL; // code générer à l'aide d'une IA (Claude)
 
         //appuie ok à chaque fois que chrys sort de la zone
         if(!inZone){
@@ -378,13 +542,19 @@ scene("lvl_2", ()=>{
 
 scene("lvl_2.2", () =>{
     add([
-    sprite('branch'), 
+    sprite("branch"), 
     pos(-100,-75),
     z(-100), 
     scale(width()/800, 
     height()/600), 
     fixed()
 ])
+add([
+        text ("Clique sur les guêpes afin de protéger la chrysalide", {size:16}),
+        anchor ("center"),
+        pos(370, height()-60),
+        color(120,120,120),
+    ])
 
 const BRANCH_W = 120;
     const BRANCH_H = 16;
@@ -420,7 +590,7 @@ const chrys = add([
     // Changement vitesse guêpes
 
     function VitesseEnnemi (){
-        return Math.min(260,80 + tempsJeu *3);
+        return Math.min(260,80 + tempsJeu *1.5);
 
     }
 
@@ -449,6 +619,8 @@ const chrys = add([
         area(),
         scale(2),
         z(5),
+        rotate(0),
+        anchor("center"),
         "ennemi",
         {
             vx:(dx/dist)*vitesse,
@@ -473,11 +645,13 @@ onDraw(() => {
         const ennemis = get("ennemi");
         for (const e of ennemis){
             const m= mousePos();
+            const halfW =ENNEMI_W
+            const halfH =ENNEMI_H
             if(
-                m.x>=e.pos.x&&
-                m.x<=e.pos.x+ENNEMI_W*2&&
-                m.y>=e.pos.y &&
-                m.y<=e.pos.y+ENNEMI_H*2
+                m.x>=e.pos.x - halfW &&
+                m.x<=e.pos.x+ halfW &&
+                m.y>=e.pos.y - halfW &&
+                m.y<=e.pos.y+ENNEMI_H
 
             ){
                 destroy(e);
@@ -493,7 +667,7 @@ onDraw(() => {
         vies--;
         updateVies();
         if(vies<=0){
-            go("gameover", {score});
+            go("gameover_2.2", {score});
         }
     });
 
@@ -535,6 +709,10 @@ onUpdate(()=>{
     tempsSpawn +=dt();
     tempsLabel.text="Temps: " +Math.floor(tempsJeu)+"s";
 
+    if (tempsJeu >=90){
+        go("trans_3", {score})
+    }
+
     if(tempsSpawn >= tempsApparition()){
         apparitionBord();
         tempsSpawn=0;
@@ -544,19 +722,20 @@ onUpdate(()=>{
     for(const e of ennemis){
         e.pos.x += e.vx*dt();
         e.pos.y += e.vy *dt();
+
+        e.angle = Math.atan2(e.vy ,e.vx)*(180/Math.PI) +90 //Code générer par une IA (Claude)
     }
-    
-
-
-
-
 });
 
 })
 
+scene("lvl_3", ()=>{
+    
+})
+
 //scène GAME OVER
 
-scene("gameover", ({score})=>{
+scene("gameover_2.2", ({score})=>{
     add([
         text("GAME OVER", {size:64, font:"monospace"}),
         pos(400,200),
@@ -575,10 +754,10 @@ scene("gameover", ({score})=>{
         anchor("center"),
         color(200,200,200)
     ]);
-    onKeyPress("space",()=>go(lvl_2))
+    onKeyPress("space",()=>go("lvl_2.2"))
 });
 
 
 
 
-go("lvl_2.2")
+go("end")
