@@ -28,6 +28,44 @@ loadSprite("chrysalide", "image/chrys.png");
 loadSprite("branch", "image/branch.png");
 loadSprite("wasp", "image/wasp.png")
 loadSprite("bg_leaf", "image/bg_leaf.png")
+loadSprite("butterfly", "image/butterfly.png",{
+    sliceX:2,
+    sliceY:2,
+    anims:{
+        fly :{from: 0, to: 1, loop: true}
+    }
+})
+loadSprite("wasp", "image/wasp.png")
+loadSprite("cloud", "image/cloud.png")
+loadSprite("pink_flower", "image/pink_flower.png", {
+    sliceX:1,
+    sliceY:2,
+    anims:{
+        move : {from: 0, to :1, loop:true}
+    }
+})
+
+loadSprite("purple_flower", "image/purple_flower.png", {
+    sliceX:1,
+    sliceY:2,
+    anims:{
+        move : {from: 0, to :1, loop:true}
+    }
+})
+loadSprite("red_flower", "image/red_flower.png",{
+    sliceX:1,
+    sliceY:2,
+    anims:{
+        move : {from: 0, to :1, loop:true}
+    }
+})
+loadSprite("white_flower", "image/white_flower.png",{
+    sliceX:1,
+    sliceY:2,
+    anims:{
+        move : {from: 0, to :1, loop:true}
+    }
+})
 
 //Scene
 
@@ -181,8 +219,20 @@ scene("end", ()=> {
 scene("lvl_1", () => {
 
    add([
-    sprite('sky'), pos(0,0),z(-100), scale(width()/576, height()/324), fixed()
+    sprite('sky'), 
+    pos(0,0),
+    z(-100), 
+    scale(width()/576, height()/324), 
+    fixed()
 ])
+
+ add([
+        text ("Utilise les flèches pour attraper les feuilles. ", {size:16}),
+        anchor ("center"),
+        pos(75, 620),
+        color(120,120,120),
+        
+    ])
 
     //Sol
     const GROUND_Y = 560;
@@ -227,7 +277,7 @@ scene("lvl_1", () => {
         const plat = add([
             sprite("plateform_base",{width:150,height:80}),
             pos(x, y),
-            area({ shape: new Rect(vec2(15, 30),PLAT_W, PLAT_H) }),
+            area({ shape: new Rect(vec2(15, 25),PLAT_W, 20) }),
             body({ isStatic: true }),
             z(1),
             "platform",
@@ -271,16 +321,13 @@ scene("lvl_1", () => {
     ];
 
     let lastY =130;
-    plat_donnees.push({
-        x: Math.random()*500+50,
-        y:lastY - (Math.random()*35+50)
-    })
+    
 
     
     for(let i=plat_donnees.length;i<50;i++){
         plat_donnees.push({
             x:Math.random()*550+50,
-            y:lastY-(Math.random()*60+80)
+            y:lastY-(Math.random()*35+75)
         });
         lastY=plat_donnees[plat_donnees.length-1].y;
     }
@@ -707,7 +754,7 @@ updateVies();
 onUpdate(()=>{
     tempsJeu +=dt();
     tempsSpawn +=dt();
-    tempsLabel.text="Temps: " +Math.floor(tempsJeu)+"s";
+    tempsLabel.text="Temps: " +Math.floor(tempsJeu)+"s" +"/90s.";
 
     if (tempsJeu >=90){
         go("trans_3", {score})
@@ -729,13 +776,205 @@ onUpdate(()=>{
 
 })
 
-scene("lvl_3", ()=>{
-    
+//scène lvl_3
+
+    //constantes
+ 
+
+ scene("lvl_3",()=>{
+
+const BG_W=800
+const BG_H =600
+ const PLAYER_SPEED = 220
+ const PLAYER_SIZE = 56
+ const FLOWER_SIZE = 38
+ const FLOWER_INTERVAL = 1.1
+ const OBJ_INTERVAL = 1.4
+ const SCROLL_INIT = 50
+ const SCROLL_MAX = 210
+ const SCROLL_ACCEL = 1.8
+ const MAX_LIVES = 3
+ const FLOWERS = ["pink_flower", "purple_flower", "red_flower", "white_flower"]
+
+let score = 0
+let vies = MAX_LIVES
+let vitesseScroll = SCROLL_INIT
+let tmpsFlower=0
+let tmpsObj =0
+let invincible = false
+let dy=0
+
+//fond + grille 
+
+add([rect(BG_H,BG_W), 
+    color(34, 139, 34), 
+    pos(0,0), 
+    fixed(),
+    z(0)])
+
+    const GRILLE = 48;
+    const LIGNE_GRILLE = []
+    for(let r=0;r<=Math.ceil(BG_H/GRILLE)+1;r++){
+LIGNE_GRILLE.push(add([
+    rect(BG_W,1),
+    color(255,255,255),
+    opacity(0.07),
+    pos(0, r*GRILLE),
+    z(1),
+]))
+    }
+//Score + vies
+
+const scoreLabel = add([
+    text ("Fleurs :0", {size:22 , font:"monospace"}),
+    pos(14,10),
+    fixed(),
+    color(255,255,255),
+    z(100),
+])
+
+const viesLabel= add([
+    text("♥ ♥ ♥", {size:28, font:"monospace"}),
+    pos(500,10),
+    fixed(),
+    color(255,0,0),
+    z(100)
+])
+
+
+function updateVies(){
+    viesLabel.text="♥ ".repeat(Math.max(vies,0)).trim()
+}
+
+//Player Papillon
+
+const player=add([
+    sprite("butterfly", {width:PLAYER_SIZE, height:PLAYER_SIZE}),
+    pos(250, 500),
+    area(),
+    fixed(),
+    scale(1.5),
+    z(10),
+    "papillon"
+])
+player.play("fly")
+
+//commandes 
+    onKeyDown("left",()=>{
+        player.move(-220,0); 
+        player.flipX = true;
+    });
+
+    onKeyDown("right",()=>{
+        player.move(220,0);
+        player.flipX = false;
+    });
+
+//apprition des Fleurs
+function spawnFlower(){
+    const Fleurs = add([
+        sprite(choose(FLOWERS), {width:FLOWER_SIZE, height:FLOWER_SIZE}),
+        pos(rand(FLOWER_SIZE, BG_W-FLOWER_SIZE*2), -FLOWER_SIZE-rand(10,80)),
+        area(),
+        z(5),
+        scale(1.5),
+        "fleur"
+    ])
+    Fleurs.play("move")
+    Fleurs.onUpdate(()=>{Fleurs.pos.y+=dy})
+}
+
+//apparition des obstacles (nuages + insectes)
+
+function spawnObstacle(){
+    const d = Math.random()>0.4
+    const d_rand = rand(d?55:170, d?95:270);
+    const droite = Math.random()>0.5
+    const ow = d? 90:52
+    const oh =d?54:44
+    const vx = droite?d_rand:-d_rand
+
+    const obs = add([
+        sprite(d?"cloud":"wasp", {width:ow,height:oh}),
+        pos(droite? -ow -5 : BG_W + 5,rand(55, BG_H -130)),
+        area(),
+        anchor("topleft"),
+        scale(1.5),
+        z(8),
+        {vx},
+        "obstacle",
+    ])
+
+    if (!droite) obs.flipX=true;
+    obs.onUpdate(()=>{
+        obs.pos.x+= obs.vx*dt();
+        if(obs.pos.x>BG_W +ow + 20|| obs.pos.x <-ow -20) destroy(obs);
+    })    
+}
+
+//boucle du mini-jeu
+onUpdate(()=>{
+    vitesseScroll = Math.min(vitesseScroll + SCROLL_ACCEL * dt(), SCROLL_MAX);
+    dy = vitesseScroll * dt();
+
+    for (const l of LIGNE_GRILLE) l.pos.y=(l.pos.y+dy)%BG_W;
+
+    tmpsFlower += dt();
+    if(tmpsFlower >= FLOWER_INTERVAL){
+        tmpsFlower = 0;
+        const n = rand(1,3);
+        for(let i =0; i<n;i++)spawnFlower();
+    }
+
+    tmpsObj += dt();
+    if(tmpsObj >= OBJ_INTERVAL){ tmpsObj = 0; spawnObstacle()}
+    for(const f of get ("fleurs")){
+        if(fl.pos.y > BG_H + FLOWER_SIZE)destroy(fl)
+    }
 })
+
+//collecter les fleurs
+onCollide("papillon", "fleurs", (p,fl)=>{
+    destroy(fl);
+    score++;
+    scoreLabel.text="Fleurs : "+ score +"/50";
+
+    const flash = add([rect (BG_W, BG_H), 
+        color (230,57,70),
+        opacity(0,20),
+        pos(0,0),
+        fixed(),
+        z(90)
+        ])
+        wait(0.07,()=>destroy(flash))
+});
+
+//onCollide obstacle 
+
+onCollide("papillon", "obstacle", (p,obs)=>{
+    if (invincible) return;
+    invincible = true 
+    vies -- ;
+    updateVies()
+
+    const flash = add([rect (BG_W, BG_H), 
+        color (230,57,70),
+        opacity(0,28),
+        pos(0,0),
+        fixed(),
+        z(90)
+        ])
+        wait(0.01,()=>destroy(flash))
+
+        if(vies<=0)go("gameover_3")
+})
+ })
+
+
 
 //scène GAME OVER
 
-scene("gameover_2.2", ({score})=>{
+scene("gameover_3", ({score})=>{
     add([
         text("GAME OVER", {size:64, font:"monospace"}),
         pos(400,200),
@@ -757,7 +996,29 @@ scene("gameover_2.2", ({score})=>{
     onKeyPress("space",()=>go("lvl_2.2"))
 });
 
+scene("gameover_2.2", ({score})=>{
+    add([
+        text("GAME OVER", {size:64, font:"monospace"}),
+        pos(400,200),
+        anchor("center"),
+        color(220,50,50)
+    ]);
+    add([
+        text("score :"+score,{size:36,font:"monospace"}),
+        pos(400,290),
+        anchor("center"),
+        color(255,255,255)
+    ]);
+    add([
+        text("Appuie sur espace pour rejouer",{size:36,font:"monospace"}),
+        pos(400,380),
+        anchor("center"),
+        color(200,200,200)
+    ]);
+    onKeyPress("space",()=>go("lvl_3"))
+});
 
 
 
-go("start")
+
+go("lvl_3")
