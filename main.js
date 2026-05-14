@@ -66,31 +66,30 @@ loadSprite("white_flower", "image/white_flower.png",{
         move : {from: 0, to :1, loop:true}
     }
 })
+loadSprite("BG_start", "image/start.jpg")
 
 //Scene
 
 scene("start", ()=> {
 
-    add ([rect(width(), height()), color (0,0,0),fixed()])
+    add ([
+        sprite ("BG_start"),
+        pos(0,0),
+        z(-100),
+        //scale(width(), height()),
+        fixed()
+
+    ])
 
     
   
-    add ([
-        text("LE PAPILLON",{
-        size:35,
-        align: "center", 
-        width : width ()*0.7,
-        
-    }),
-    anchor ("center"),
-    pos(center()),
-    color(137,207,240)
-    ])
+    
     add([
         text ("Appuie sur ESPACE pour commencer", {size:16}),
         anchor ("center"),
         pos(width()/2, height()-60),
         color(120,120,120),
+        
     ])
 
     onKeyPress("space", () => go ("trans_1"))
@@ -265,6 +264,8 @@ scene("lvl_1", () => {
     ]);
     player.play("idle")
 
+    
+
     // Plateforme
     const PLAT_W = 120;
     const PLAT_H = 30;
@@ -324,7 +325,7 @@ scene("lvl_1", () => {
     
 
     
-    for(let i=plat_donnees.length;i<50;i++){
+    for(let i=plat_donnees.length;i<100;i++){
         plat_donnees.push({
             x:Math.random()*550+50,
             y:lastY-(Math.random()*35+75)
@@ -338,15 +339,17 @@ scene("lvl_1", () => {
     }
 
     let cameraY=SPAWN.y;
-    let currentPlat=null
+    let currentPlat=null;
+    let offsetFromPlat = null 
+    
 
-    for(const plat of plateformes){
-        plat.onCollideUpdate("chenille", (p, col)=>{
-            if(col.normal&&col.normal.y < -0.5){
-                currentPlat=plat;
-            }
-        });
-    }
+    player.onCollideUpdate("platform", (plat, col)=>{
+        if ( col && col.normal && col.normal.y <0.5){
+            currentPlat =plat 
+            
+        }
+    })
+    
 
     //Récupération feuille et destruction après coup + score 
 
@@ -355,10 +358,20 @@ scene("lvl_1", () => {
     player.onCollide("feuille", (leaf)=> {
         destroy(leaf);
         score ++;
-        scoreLabel.text= "Feuilles : "+score +"/30"
+        scoreLabel.text= "Feuilles : "+score +"/50"
     });
     onUpdate(()=>{
-        if(score ==30){
+       
+        for (const plat of plateformes){
+            if (player.vel.y<0){
+                plat.area.offset = vec2(0, -9999);
+            } else {
+                plat.area.offset = vec2(15,5)
+            }
+        }
+
+
+        if(score ==50){
         go("trans_2");
         return;
         }
@@ -377,6 +390,7 @@ scene("lvl_1", () => {
         const plat_touchee = currentPlat;
         currentPlat=null;
 
+
         for(const plat of plateformes){
             plat.prevX=plat.pos.x;
             plat.pos.x+=plat.direction*plat.speed*dt();
@@ -388,14 +402,11 @@ scene("lvl_1", () => {
                 plat.leaf.pos.y=plat.pos.y+plat.leaf.offsetY;
             }
         }
-        if (plat_touchee&&plat_touchee.exists()){
-            const delta =plat_touchee.pos.x-plat_touchee.prevX;
-            const centerX=player.pos.x+PLAYER_W/2;
-            const platLeft=plat_touchee.pos.x+8;
-            const platRight = plat_touchee.pos.x+PLAT_W-8;
-            if(centerX>= platLeft&&centerX<=platRight){
-                player.pos.x+=delta;
-            }
+        if (currentPlat&&currentPlat.exists()){
+            const delta =currentPlat.pos.x-currentPlat.prevX;
+            console.log("delta =", delta, "| prevX =", currentPlat.prevX, "| pos.x =", currentPlat.pos.x);
+            player.pos.x -= delta 
+            
         }
         
     });
@@ -415,7 +426,7 @@ scene("lvl_1", () => {
     });
     //interface score 
 const scoreLabel = add([
-        text("Feuilles : 0/25", { size: 24, font: "monospace" }),
+        text("Feuilles : 0", { size: 24, font: "monospace" }),
         pos(20, 20),
         fixed(),
         color(255, 255, 255),
@@ -630,14 +641,14 @@ const chrys = add([
 
         // temps d'intervalle apparitions guêpes
     function tempsApparition (){
-        return Math.max (0.5, 2.0 - tempsJeu * 0.028);
+        return Math.max (0.5, 3.0 - tempsJeu * 0.020);
 
     }
 
     // Changement vitesse guêpes
 
     function VitesseEnnemi (){
-        return Math.min(260,80 + tempsJeu *1.5);
+        return Math.min(120 + tempsJeu);
 
     }
 
@@ -795,6 +806,9 @@ const BG_H =600
  const SCROLL_ACCEL = 1.8
  const MAX_LIVES = 3
  const FLOWERS = ["pink_flower", "purple_flower", "red_flower", "white_flower"]
+ const PLAYER_Y = 500
+ const OBS_Y_SPREAD = 55
+
 
 let score = 0
 let vies = MAX_LIVES
@@ -888,15 +902,15 @@ function spawnFlower(){
 
 function spawnObstacle(){
     const d = Math.random()>0.4
-    const d_rand = rand(d?55:170, d?95:270);
+    const base_speed = d ? rand (130,180): rand (240,320);
     const droite = Math.random()>0.5
     const ow = d? 90:52
     const oh =d?54:44
-    const vx = droite?d_rand:-d_rand
+    const vx = droite? -base_speed: base_speed
 
     const obs = add([
         sprite(d?"cloud":"wasp", {width:ow,height:oh}),
-        pos(droite? -ow -5 : BG_W + 5,rand(55, BG_H -130)),
+        pos(droite? -ow -5 : BG_W + 5,PLAYER_Y + rand (-OBS_Y_SPREAD, OBS_Y_SPREAD)),
         area(),
         anchor("topleft"),
         scale(1.5),
@@ -917,7 +931,7 @@ onUpdate(()=>{
     vitesseScroll = Math.min(vitesseScroll + SCROLL_ACCEL * dt(), SCROLL_MAX);
     dy = vitesseScroll * dt();
 
-    for (const l of LIGNE_GRILLE) l.pos.y=(l.pos.y+dy)%BG_W;
+    for (const l of LIGNE_GRILLE) l.pos.y=(l.pos.y+dy)%BG_H;
 
     tmpsFlower += dt();
     if(tmpsFlower >= FLOWER_INTERVAL){
@@ -928,20 +942,20 @@ onUpdate(()=>{
 
     tmpsObj += dt();
     if(tmpsObj >= OBJ_INTERVAL){ tmpsObj = 0; spawnObstacle()}
-    for(const f of get ("fleurs")){
+    for(const fl of get ("fleur")){
         if(fl.pos.y > BG_H + FLOWER_SIZE)destroy(fl)
     }
 })
 
 //collecter les fleurs
-onCollide("papillon", "fleurs", (p,fl)=>{
+onCollide("papillon", "fleur", (p,fl)=>{
     destroy(fl);
     score++;
-    scoreLabel.text="Fleurs : "+ score +"/50";
+    scoreLabel.text="Fleurs : "+ score +"/100";
 
     const flash = add([rect (BG_W, BG_H), 
         color (230,57,70),
-        opacity(0,20),
+        opacity(0.20),
         pos(0,0),
         fixed(),
         z(90)
@@ -959,7 +973,7 @@ onCollide("papillon", "obstacle", (p,obs)=>{
 
     const flash = add([rect (BG_W, BG_H), 
         color (230,57,70),
-        opacity(0,28),
+        opacity(0.28),
         pos(0,0),
         fixed(),
         z(90)
@@ -967,7 +981,12 @@ onCollide("papillon", "obstacle", (p,obs)=>{
         wait(0.01,()=>destroy(flash))
 
         if(vies<=0)go("gameover_3")
+            wait(1.5, ()=>{
+        invincible = false})
+
+        
 })
+if(score ==100)go("end")
  })
 
 
@@ -1021,4 +1040,4 @@ scene("gameover_2.2", ({score})=>{
 
 
 
-go("lvl_3")
+go("lvl_2.2")
