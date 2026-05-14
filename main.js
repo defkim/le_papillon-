@@ -358,7 +358,7 @@ scene("lvl_1", () => {
     player.onCollide("feuille", (leaf)=> {
         destroy(leaf);
         score ++;
-        scoreLabel.text= "Feuilles : "+score +"/50"
+        scoreLabel.text= "Feuilles : "+score +"/35"
     });
     onUpdate(()=>{
        
@@ -371,7 +371,7 @@ scene("lvl_1", () => {
         }
 
 
-        if(score ==50){
+        if(score ==35){
         go("trans_2");
         return;
         }
