@@ -1038,10 +1038,10 @@ scene("gameover_2.2", ({score})=>{
         anchor("center"),
         color(200,200,200)
     ]);
-    onKeyPress("space",()=>go("lvl_3"))
+    onKeyPress("space",()=>go("lvl_2.2"))
 });
 
 
 
 
-go("lvl_3")
+go("start")
