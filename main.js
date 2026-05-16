@@ -804,7 +804,7 @@ const BG_H =600
  const SCROLL_INIT = 50
  const SCROLL_MAX = 210
  const SCROLL_ACCEL = 1.8
- const MAX_LIVES = 3
+ const MAX_LIVES = 5
  const FLOWERS = ["pink_flower", "purple_flower", "red_flower", "white_flower"]
  const PLAYER_Y = 500
  const OBS_Y_SPREAD = 55
@@ -818,9 +818,18 @@ let tmpsObj =0
 let invincible = false
 let dy=0
 
+add([
+        text ("Utilise les flèches pour éviter les obstacles.", {size:16}),
+        anchor ("center"),
+        pos(370, height()-10),
+        color(0,0,0),
+        fixed(),
+        z(101),
+    ])
+
 //fond + grille 
 
-add([rect(BG_H,BG_W), 
+add([rect(BG_W,BG_H), 
     color(34, 139, 34), 
     pos(0,0), 
     fixed(),
@@ -848,8 +857,8 @@ const scoreLabel = add([
 ])
 
 const viesLabel= add([
-    text("♥ ♥ ♥", {size:28, font:"monospace"}),
-    pos(500,10),
+    text("♥ ♥ ♥ ♥ ♥", {size:28, font:"monospace"}),
+    pos(620,10),
     fixed(),
     color(255,0,0),
     z(100)
@@ -902,28 +911,26 @@ function spawnFlower(){
 
 function spawnObstacle(){
     const d = Math.random()>0.4
-    const base_speed = d ? rand (130,180): rand (240,320);
-    const droite = Math.random()>0.5
     const ow = d? 90:52
     const oh =d?54:44
-    const vx = droite? -base_speed: base_speed
+    const vy = d? rand(80,130): rand (180,260)
 
     const obs = add([
         sprite(d?"cloud":"wasp", {width:ow,height:oh}),
-        pos(droite? -ow -5 : BG_W + 5,PLAYER_Y + rand (-OBS_Y_SPREAD, OBS_Y_SPREAD)),
+        pos(rand(ow, BG_W-ow*2), -oh -rand(10,60)),
         area(),
         anchor("topleft"),
         scale(1.5),
         z(8),
-        {vx},
+        {vy},
         "obstacle",
     ])
+    if(!d)obs.angle =180
 
-    if (!droite) obs.flipX=true;
-    obs.onUpdate(()=>{
-        obs.pos.x+= obs.vx*dt();
-        if(obs.pos.x>BG_W +ow + 20|| obs.pos.x <-ow -20) destroy(obs);
-    })    
+   obs.onUpdate(()=>{
+    obs.pos.y += obs.vy*dt()
+    if (obs.pos.y > BG_H +oh+20) destroy(obs)
+   })  
 }
 
 //boucle du mini-jeu
@@ -945,6 +952,7 @@ onUpdate(()=>{
     for(const fl of get ("fleur")){
         if(fl.pos.y > BG_H + FLOWER_SIZE)destroy(fl)
     }
+if(score ==100)go("end")
 })
 
 //collecter les fleurs
@@ -953,14 +961,6 @@ onCollide("papillon", "fleur", (p,fl)=>{
     score++;
     scoreLabel.text="Fleurs : "+ score +"/100";
 
-    const flash = add([rect (BG_W, BG_H), 
-        color (230,57,70),
-        opacity(0.20),
-        pos(0,0),
-        fixed(),
-        z(90)
-        ])
-        wait(0.07,()=>destroy(flash))
 });
 
 //onCollide obstacle 
@@ -980,13 +980,17 @@ onCollide("papillon", "obstacle", (p,obs)=>{
         ])
         wait(0.01,()=>destroy(flash))
 
-        if(vies<=0)go("gameover_3")
-            wait(1.5, ()=>{
-        invincible = false})
+        if(vies<=0){
+            wait(0.3, ()=> go ("gameover_3", {score}))
+            return
+
+            }
+
+    wait(1.5, ()=>{invincible = false})
 
         
 })
-if(score ==100)go("end")
+
  })
 
 
@@ -1012,7 +1016,7 @@ scene("gameover_3", ({score})=>{
         anchor("center"),
         color(200,200,200)
     ]);
-    onKeyPress("space",()=>go("lvl_2.2"))
+    onKeyPress("space",()=>go("lvl_3"))
 });
 
 scene("gameover_2.2", ({score})=>{
@@ -1040,4 +1044,4 @@ scene("gameover_2.2", ({score})=>{
 
 
 
-go("start")
+go("lvl_3")
