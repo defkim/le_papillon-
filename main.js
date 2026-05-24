@@ -177,7 +177,7 @@ scene("end", ()=> {
 
   
     add ([
-        text("Après avoir trouver un partenaire c'est au tour de notre papillon de cacher ses oeufs dans les feuilles..",{
+        text("Après avoir trouvé un partenaire c'est au tour de notre papillon de cacher ses oeufs dans les feuilles..",{
         size:28,
         align: "center", 
         width : width ()*0.7,
@@ -444,6 +444,11 @@ scene("lvl_2", ()=>{
     const PIVOT_Y  = 80 + BRANCH_H;
     const ENNEMI_W = 28;
     const ENNEMI_H =28;
+    const OBJECTIF = 4
+    const GRAVITE = 9.8
+    const FROTT = 0.995
+    const FORCE_POUSSEE = 0.04
+    const ANGLE_SEUIL = 0.12
 
 
     add([
@@ -456,7 +461,7 @@ scene("lvl_2", ()=>{
 ])
 
     add([
-        text ("Appuie sur ESPACE pour stabiliser la chrysalide", {size:16, font : "monospace"}),
+        text ("Utilise les flèches pour stabiliser la chrysalide", {size:16, font : "monospace"}),
         anchor ("center"),
         pos(360, height()-60),
         color(120,120,120),
@@ -467,11 +472,20 @@ scene("lvl_2", ()=>{
         pos(0),
         z(100),
         scale(SCALE_CHRYS)
+
+        
         
 
     
 
     ]);
+
+    //Physique du pendule - Code généré par une IA (Claude)
+    let angle = 0.6;  
+    let d =0      
+    let omega  = 0;         
+    let tempsStable = 0;
+    let estStable   = false;
     onDraw(() => {
         drawLine({
             p1:    vec2(PIVOT_X, PIVOT_Y),
@@ -480,22 +494,21 @@ scene("lvl_2", ()=>{
             color: rgb(97, 60, 19),
     });
 });
-    const ANGLE_SEUIL=0.08;
-    const OBJECTIF = 20;
+    
 
     let scoreStable=0;
     let canPress = true;
     let inZone = false;
-    let estStable = false;
+    
 
     //balancement
     let t = 0
     const AMPLITUDE = 0.7
     const VITESSE = 1.8
-    let angle = 0
+    
 
     const statusLabel = add([
-        text("Appuie sur espace lorsque la chrysalide est dans la zone verte", { size: 22, font: "monospace" }),
+        text("Utilise les flèches pour stabiliser la chrysalide", { size: 22, font: "monospace" }),
         pos(350, 150),
         anchor("center"),
         fixed(),
@@ -504,7 +517,7 @@ scene("lvl_2", ()=>{
     ]);
 
     const scoreLabel = add([
-        text ("stabilisation: 0/"+ OBJECTIF, {size: 22, font:"monospace"}),
+        text ("stabilisation: 0/"+ OBJECTIF +"s", {size: 22, font:"monospace"}),
         pos(20,20),
         fixed(),
         color(255,255,255),
@@ -516,6 +529,7 @@ scene("lvl_2", ()=>{
     const BARRE_W = 220;
     const BARRE_X = 20;
     const BARRE_Y = 55;
+
     onDraw(() => {
         // Fond
         drawRect({
@@ -532,7 +546,7 @@ scene("lvl_2", ()=>{
             height: 14,
             color: rgb(50, 200, 80),
         });
-         // Jauge pendule en bas
+         // Jauge pendule (angle)
         const JAUGE_Y   = 570;
         const JAUGE_W   = 400;
         const JAUGE_X   = 150;
@@ -557,45 +571,48 @@ scene("lvl_2", ()=>{
 
     
     onUpdate(() => {
+       const d = dt();
+       const alpha = -(GRAVITE/ROPE_LEN)*Math.sin(angle) // Généré par une IA (Claude)
+       omega = (omega+alpha*d)*FROTT // Généré par une IA (Claude)
+       angle += omega*d // Généré par une IA (Claude)
+        
+   
+        
+        //commandes 
+    if (isKeyDown("left")){
+        omega -= FORCE_POUSSEE
+    }
+    if (isKeyDown("right")){
+        omega += FORCE_POUSSEE
+    }
+    
+
+    chrys.pos.x = PIVOT_X + Math.sin(angle) * ROPE_LEN - (CHRYS_W * SCALE_CHRYS) / 2;
+        chrys.pos.y = PIVOT_Y + Math.cos(angle) * ROPE_LEN - (CHRYS_H * SCALE_CHRYS) / 4;
         
 
-        
-        t += dt();
-        angle = Math.sin(t*VITESSE)*AMPLITUDE; // code générer à l'aide d'une IA (Claude)
+        // Détection stabilité
+        estStable = Math.abs(angle) < ANGLE_SEUIL && Math.abs(omega) < 0.05;
 
-        chrys.pos.x = PIVOT_X + Math.sin(angle)*ROPE_LEN-(CHRYS_W*SCALE_CHRYS)/2; // code générer à l'aide d'une IA (Claude)
-        chrys.pos.y=PIVOT_Y+ Math.cos(angle)*ROPE_LEN-(CHRYS_H*SCALE_CHRYS)/4; // code générer à l'aide d'une IA (Claude)
-        inZone = Math.abs(angle)<ANGLE_SEUIL; // code générer à l'aide d'une IA (Claude)
-
-        //appuie ok à chaque fois que chrys sort de la zone
-        if(!inZone){
-            canPress=true;
-            statusLabel.text ="Appuies au bon moment..."
-            statusLabel.color=rgb(255,255,255);
+        if (estStable) {
+            tempsStable += d;
+            statusLabel.text  = "Ne bouge plus !";
+            statusLabel.color = rgb(50, 220, 80);
         } else {
-            statusLabel.text = "Appuies sur espace !"
-            statusLabel.color=rgb(50,220,80);
+            tempsStable = Math.max(0, tempsStable - d * 0.5); // décroît si on sort
+            statusLabel.text  = Math.abs(angle) > ANGLE_SEUIL
+                ? "Maintiens la chrysalide au centre"
+                : "Stabilise la chrysalide !";
+            statusLabel.color = rgb(255, 255, 255);
         }
-        scoreLabel.text = "Stabilisations :"+ scoreStable+" / "+OBJECTIF;
-        if(scoreStable>= OBJECTIF){
-            go("lvl_2.2");
-        }
-    });
-        
-        //commande espace 
-        onKeyPress("space",()=>{
-            if(inZone&&canPress){
-                scoreStable++;
-                canPress=false;
-            } else {
-                //pénalité si manqué
-                scoreStable = Math.max(0, scoreStable -1);
-                statusLabel.text ="Raté !";
-                statusLabel.color = rgb (220, 80,80);
-            }
-        });
 
-});
+        scoreLabel.text = "Stabilisation : " + Math.floor(tempsStable) + " / " + OBJECTIF + "s";
+
+        if (tempsStable >= OBJECTIF) go("lvl_2.2");
+    });
+    });
+
+
 
 
 scene("lvl_2.2", () =>{
@@ -765,9 +782,9 @@ updateVies();
 onUpdate(()=>{
     tempsJeu +=dt();
     tempsSpawn +=dt();
-    tempsLabel.text="Temps: " +Math.floor(tempsJeu)+"s" +"/90s.";
+    tempsLabel.text="Temps: " +Math.floor(tempsJeu)+"s" +"/60s.";
 
-    if (tempsJeu >=90){
+    if (tempsJeu >=60){
         go("trans_3", {score})
     }
 
@@ -874,7 +891,9 @@ function updateVies(){
 const player=add([
     sprite("butterfly", {width:PLAYER_SIZE, height:PLAYER_SIZE}),
     pos(250, 500),
-    area(),
+    area({
+        shape:new Rect(vec2(18,16), PLAYER_SIZE*0.45, PLAYER_SIZE*0.45)
+    }),
     fixed(),
     scale(1.5),
     z(10),
@@ -886,11 +905,13 @@ player.play("fly")
     onKeyDown("left",()=>{
         player.move(-220,0); 
         player.flipX = true;
+        player.pos.x = Math.max(0, player.pos.x)
     });
 
     onKeyDown("right",()=>{
         player.move(220,0);
         player.flipX = false;
+        player.pos.x = Math.min(BG_W -PLAYER_SIZE * player.scale.x, player.pos.x)
     });
 
 //apprition des Fleurs
@@ -918,7 +939,9 @@ function spawnObstacle(){
     const obs = add([
         sprite(d?"cloud":"wasp", {width:ow,height:oh}),
         pos(rand(ow, BG_W-ow*2), -oh -rand(10,60)),
-        area(),
+        area({
+            shape: new Rect(vec2(d? 20:10, d? 18:10), ow*0.55, oh*0.55)
+        }),
         anchor("topleft"),
         scale(1.5),
         z(8),
@@ -1044,4 +1067,4 @@ scene("gameover_2.2", ({score})=>{
 
 
 
-go("start")
+go("lvl_2")
