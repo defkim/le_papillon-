@@ -1067,4 +1067,4 @@ scene("gameover_2.2", ({score})=>{
 
 
 
-go("lvl_2")
+go("start")
