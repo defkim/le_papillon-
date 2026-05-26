@@ -206,7 +206,7 @@ scene("end", ()=> {
         if(musique_actuelle){
             musique_actuelle.stop()
         }
-    go("trans_1")
+    go("start")
 
 
    
@@ -1125,4 +1125,4 @@ scene("gameover_2.2", ({score})=>{
 
 
 
-go("lvl_3")
+go("start")
