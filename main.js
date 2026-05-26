@@ -68,6 +68,15 @@ loadSprite("white_flower", "image/white_flower.png",{
 })
 loadSprite("BG_start", "image/start.jpg")
 
+// musiques 
+
+loadMusic("lvl_1", "/audio/lvl_1.mp3");
+loadMusic("lvl_2", "/audio/lvl_2.mp3");
+loadMusic("lvl_3", "/audio/lvl_3.mp3");
+loadSound("level_up", "/audio/level_up.mp3");
+loadSound("gameover", "/audio/gameover.mp3");
+
+let musique_actuelle = null
 //Scene
 
 scene("start", ()=> {
@@ -188,30 +197,21 @@ scene("end", ()=> {
     color(0,0,0)
     ])
     const hint = add([
-        text ("Appuie sur ESPACE pour continuer", {size:16}),
+        text ("Appuie sur ESPACE pour rejouer", {size:16}),
         anchor ("center"),
         pos(width()/2, height()-60),
         color(120,120,120),
     ])
     onKeyPress("space", () => {
-    add ([rect(width(), height()), color (0,0,0),fixed()])
+        if(musique_actuelle){
+            musique_actuelle.stop()
+        }
+    go("trans_1")
 
-    add ([
-        text("Merci d'avoir joué.",{
-        size:35,
-        align: "center", 
-        width : width ()*0.7,
-        
-    }),
-    anchor ("center"),
-    pos(center()),
-    color(137,207,240),
-    fixed(),
-    z(1),
-    ])
-    hint.destroy()
 
-})
+   
+    })
+
 })
 
 
@@ -223,7 +223,12 @@ scene("lvl_1", () => {
     z(-100), 
     scale(width()/576, height()/324), 
     fixed()
+
 ])
+musique_actuelle = play("lvl_1", {
+    loop: true,
+    volume: 0.5 
+});
 
  add([
         text ("Utilise les flèches pour attraper les feuilles. ", {size:16}),
@@ -372,7 +377,13 @@ scene("lvl_1", () => {
 
 
         if(score ==35){
+            
+if (musique_actuelle){musique_actuelle.stop()}
+play("level_up", {
+    volume: 0.5 
+});
         go("trans_2");
+
         return;
         }
         setCamPos(player.pos);
@@ -449,6 +460,11 @@ scene("lvl_2", ()=>{
     const FROTT = 0.995
     const FORCE_POUSSEE = 0.04
     const ANGLE_SEUIL = 0.12
+
+    musique_actuelle = play("lvl_2", {
+    loop: true,
+    volume: 0.5 
+});
 
 
     add([
@@ -608,7 +624,16 @@ scene("lvl_2", ()=>{
 
         scoreLabel.text = "Stabilisation : " + Math.floor(tempsStable) + " / " + OBJECTIF + "s";
 
-        if (tempsStable >= OBJECTIF) go("lvl_2.2");
+        if (tempsStable >= OBJECTIF) {go("lvl_2.2") ;
+        if(musique_actuelle){
+            musique_actuelle.stop()
+        }
+        play("level_up", {
+    
+    volume: 0.5 
+});
+go("lvl_2.2")}
+        
     });
     });
 
@@ -624,6 +649,10 @@ scene("lvl_2.2", () =>{
     height()/600), 
     fixed()
 ])
+musique_actuelle=play("lvl_2", {
+    loop: true,
+    volume: 0.5 
+});
 add([
         text ("Clique sur les guêpes afin de protéger la chrysalide", {size:16}),
         anchor ("center"),
@@ -743,6 +772,13 @@ onDraw(() => {
         updateVies();
         if(vies<=0){
             go("gameover_2.2", {score});
+            if (musique_actuelle){
+                musique_actuelle.stop()
+            }
+            play("level_up",
+                {volume:0.5}
+            )
+            go("gameover_2.2", {score})
         }
     });
 
@@ -785,7 +821,14 @@ onUpdate(()=>{
     tempsLabel.text="Temps: " +Math.floor(tempsJeu)+"s" +"/60s.";
 
     if (tempsJeu >=60){
-        go("trans_3", {score})
+        if(musique_actuelle){
+            musique_actuelle.stop()
+        }
+        
+        play("level_up", {
+    volume: 0.5 
+});
+go("trans_3", {score})
     }
 
     if(tempsSpawn >= tempsApparition()){
@@ -834,6 +877,11 @@ let tmpsFlower=0
 let tmpsObj =0
 let invincible = false
 let dy=0
+
+musique_actuelle = play("lvl_3", {
+    loop: true,
+    volume: 0.5 
+});
 
 add([
         text ("Utilise les flèches pour éviter les obstacles.", {size:16}),
@@ -1004,6 +1052,9 @@ onCollide("papillon", "obstacle", (p,obs)=>{
         wait(0.01,()=>destroy(flash))
 
         if(vies<=0){
+            if (musique_actuelle)
+                {musique_actuelle.stop()}
+    
             wait(0.3, ()=> go ("gameover_3", {score}))
             return
 
@@ -1021,6 +1072,9 @@ onCollide("papillon", "obstacle", (p,obs)=>{
 //scène GAME OVER
 
 scene("gameover_3", ({score})=>{
+    play("gameover", {
+    volume: 0.5 
+});
     add([
         text("GAME OVER", {size:64, font:"monospace"}),
         pos(400,200),
@@ -1043,6 +1097,10 @@ scene("gameover_3", ({score})=>{
 });
 
 scene("gameover_2.2", ({score})=>{
+
+    play("gameover", {
+    volume: 0.5 
+});
     add([
         text("GAME OVER", {size:64, font:"monospace"}),
         pos(400,200),
@@ -1067,4 +1125,4 @@ scene("gameover_2.2", ({score})=>{
 
 
 
-go("start")
+go("lvl_3")

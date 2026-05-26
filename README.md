@@ -16,11 +16,22 @@ Le papillon est un jeu à but éducatif qui propose, à travers plusieurs mini-j
 ## Ressources
 
 ### Images utilisées
-Toutes les images, sprites, fonds sont libres de droits ou créée par mes soins. 
+Toutes les images, sprites, fonds sont libres de droits ou créée par mes soins sur piksel art. 
 
 ### Sons 
+lvl_1 : https://pixabay.com/fr/music/airs-pour-enfants-heureux-kid-games-music-comedy-situation-soundtrack-play-arcade-283659/
+
+lvl_2 : https://pixabay.com/fr/music/jeux-vid%C3%A9o-retro-game-arcade-236133/
+
+lvl_3 : https://pixabay.com/fr/music/jeux-vid%C3%A9o-that-game-arcade-medium-236110/
+
+level_up : https://pixabay.com/fr/sound-effects/films-et-effets-sp%C3%A9ciaux-arcade-ui-18-229517/
+
+Gameover : https://pixabay.com/fr/sound-effects/musical-game-over-417465/
 
 ### Littérature scientifique
+
+Site du Naturospace (Normandie) : https://www.naturospace.com/cycle-de-vie-de-papillon/
 
 
 ## Procédure de lancement 
