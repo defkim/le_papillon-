@@ -18,6 +18,13 @@ Le papillon est un jeu à but éducatif qui propose, à travers plusieurs mini-j
 ### Images utilisées
 Toutes les images, sprites, fonds sont libres de droits ou créée par mes soins sur piksel art. 
 
+Captures d'écran du jeu : 
+lvl_1 : image/screenshot_2.png
+lvl_2 : image/screenshot_3.png
+lvl_3 : image/screenshot_1.png 
+
+
+
 ### Sons 
 lvl_1 : https://pixabay.com/fr/music/airs-pour-enfants-heureux-kid-games-music-comedy-situation-soundtrack-play-arcade-283659/
 
