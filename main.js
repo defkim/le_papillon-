@@ -70,11 +70,11 @@ loadSprite("BG_start", "image/start.jpg")
 
 // musiques 
 
-loadMusic("lvl_1", "/audio/lvl_1.mp3");
-loadMusic("lvl_2", "/audio/lvl_2.mp3");
-loadMusic("lvl_3", "/audio/lvl_3.mp3");
-loadSound("level_up", "/audio/level_up.mp3");
-loadSound("gameover", "/audio/gameover.mp3");
+loadMusic("lvl_1", "audio/lvl_1.mp3");
+loadMusic("lvl_2", "audio/lvl_2.mp3");
+loadMusic("lvl_3", "audio/lvl_3.mp3");
+loadSound("level_up", "audio/level_up.mp3");
+loadSound("gameover", "audio/gameover.mp3");
 
 let musique_actuelle = null
 //Scene
