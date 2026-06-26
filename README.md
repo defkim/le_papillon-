@@ -1,5 +1,6 @@
 # le_papillon-
-
+## lien du jeu 
+[itch.io](https://defkim.itch.io/le-papillon) 
 ## Description du jeux
 Le papillon est un jeu à but éducatif qui propose, à travers plusieurs mini-jeux, de comprendre le cycle de vie d'un papillon. 
 
